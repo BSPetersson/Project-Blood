@@ -78,6 +78,8 @@ def streams():
             #cv2.imshow("green", green)
             #cv2.imshow("blue", blue)
             
+            cv2.imwrite("images/image_{}.png".format(int(time.time())), red)
+            
             #cv2.imshow("frame", frame)
             cv2.waitKey(1)
             #rawCapture.truncate(0)
