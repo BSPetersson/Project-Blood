@@ -13,8 +13,6 @@ pool = []
 
 frame = None
 
-
-
 class ImageProcessor(threading.Thread):
     def __init__(self):
         super(ImageProcessor, self).__init__()
@@ -41,7 +39,7 @@ class ImageProcessor(threading.Thread):
 
                     #img = cv2.cvtColor(red, cv2.COLOR_BGR2GRAY)
 
-                    img = cv2.adaptiveThreshold(img.astype("uint8"), 255, cv2.ADAPTIVE_THRESH_MEAN_C, cv2.THRESH_BINARY, 89, 3)
+                    img = cv2.adaptiveThreshold(red.astype("uint8"), 255, cv2.ADAPTIVE_THRESH_MEAN_C, cv2.THRESH_BINARY, 89, 3)
 
                     img = cv2.bitwise_not(img)
 
