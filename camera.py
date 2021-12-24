@@ -13,7 +13,8 @@ pool = []
 
 frame = None
 
-
+kernel_open = np.ones((2,2), np.uint8)
+kernel_close = np.ones((2,2), np.uint8)
 
 class ImageProcessor(threading.Thread):
     def __init__(self):
@@ -37,9 +38,13 @@ class ImageProcessor(threading.Thread):
                     image = Image.open(self.stream).convert('RGB')
                     image = np.array(image)
 
-                    red = image[:,:,0]
+                    img = image[:,:,0]
 
-                    #img = cv2.cvtColor(red, cv2.COLOR_BGR2GRAY)
+                    size = img.shape
+                    size = (int(size[1]/3), int(size[0]/3))
+                    img = cv2.resize(img, size, interpolation= cv2.INTER_LINEAR)
+
+                    #img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
 
                     img = cv2.adaptiveThreshold(img.astype("uint8"), 255, cv2.ADAPTIVE_THRESH_MEAN_C, cv2.THRESH_BINARY, 89, 3)
 
