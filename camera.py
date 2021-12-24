@@ -13,6 +13,8 @@ pool = []
 
 frame = None
 
+
+
 class ImageProcessor(threading.Thread):
     def __init__(self):
         super(ImageProcessor, self).__init__()
@@ -34,11 +36,20 @@ class ImageProcessor(threading.Thread):
                     # Read the image and do some processing on it
                     image = Image.open(self.stream).convert('RGB')
                     image = np.array(image)
+
+                    red = image[:,:,0]
+
+                    #img = cv2.cvtColor(red, cv2.COLOR_BGR2GRAY)
+
+                    img = cv2.adaptiveThreshold(img.astype("uint8"), 255, cv2.ADAPTIVE_THRESH_MEAN_C, cv2.THRESH_BINARY, 89, 3)
+
+                    img = cv2.bitwise_not(img)
+
+                    img = cv2.morphologyEx(img, cv2.MORPH_OPEN, kernel_open)
+                    img = cv2.morphologyEx(img, cv2.MORPH_CLOSE, kernel_close)
                     
-                    frame = image
-                    
-                    #cv2.imshow("frame", image)
-                    #cv2.waitKey(1)
+                    cv2.imshow("segmentation", img)
+                    cv2.waitKey(1)
                     #rawCapture.truncate(0)
                     
                     #...
@@ -69,19 +80,19 @@ def streams():
             # When the pool is starved, wait a while for it to refill
             time.sleep(0.1)
             
-        if frame is not None:
-            red = frame[:,:,0]
+        #if frame is not None:
+            #red = frame[:,:,0]
             #green = frame[:,:,1]
             #blue = frame[:,:,2]
             
-            cv2.imshow("red", red)
+            #cv2.imshow("red", red)
             #cv2.imshow("green", green)
             #cv2.imshow("blue", blue)
             
-            cv2.imwrite("images/image_{}.png".format(int(time.time())), red)
+            #cv2.imwrite("images/image_{}.png".format(int(time.time())), red)
             
             #cv2.imshow("frame", frame)
-            cv2.waitKey(1)
+            #cv2.waitKey(1)
             #rawCapture.truncate(0)
             #print("a")
 
