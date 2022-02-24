@@ -13,6 +13,9 @@ pool = []
 
 frame = None
 
+kernel_open = np.ones((2,2), np.uint8)
+kernel_close = np.ones((2,2), np.uint8)
+
 class ImageProcessor(threading.Thread):
     def __init__(self):
         super(ImageProcessor, self).__init__()
@@ -35,11 +38,15 @@ class ImageProcessor(threading.Thread):
                     image = Image.open(self.stream).convert('RGB')
                     image = np.array(image)
 
-                    red = image[:,:,0]
+                    frame = image[:,:,0]
 
-                    #img = cv2.cvtColor(red, cv2.COLOR_BGR2GRAY)
+                    size = frame.shape
+                    size = (int(size[1]/3), int(size[0]/3))
+                    frame = cv2.resize(frame, size, interpolation= cv2.INTER_LINEAR)
 
-                    img = cv2.adaptiveThreshold(red.astype("uint8"), 255, cv2.ADAPTIVE_THRESH_MEAN_C, cv2.THRESH_BINARY, 89, 3)
+                    #img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+
+                    img = cv2.adaptiveThreshold(frame.astype("uint8"), 255, cv2.ADAPTIVE_THRESH_MEAN_C, cv2.THRESH_BINARY, 89, 3)
 
                     img = cv2.bitwise_not(img)
 
@@ -47,6 +54,7 @@ class ImageProcessor(threading.Thread):
                     img = cv2.morphologyEx(img, cv2.MORPH_CLOSE, kernel_close)
                     
                     cv2.imshow("segmentation", img)
+                    cv2.imshow("frame", frame)
                     cv2.waitKey(1)
                     #rawCapture.truncate(0)
                     
