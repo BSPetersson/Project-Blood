@@ -44,7 +44,7 @@ skin_tone = input("Skine tone:")
 
 person_data = {"name": name, "age": age, "weight": weight, "arm circumference": arm_circumference, "skin tone": skin_tone}
 
-with open('../data/{}.csv'.format(name), 'w') as f:
+with open('data/{}.csv'.format(name), 'w') as f:
     for key in person_data.keys():
         f.write("%s,%s\n"%(key, person_data[key]))
 
@@ -69,7 +69,7 @@ def capture_data(lower_bound_sp, upper_bound_sp, count):
 
 def save_images(images):
     global place_count
-    directory = "../data/{}nm/{}".format(wavelength, name)
+    directory = "data/{}nm/{}".format(wavelength, name)
     os.makedirs(directory, exist_ok=True)
     for image in images:
         cv2.imwrite(directory + "/{}_{}.png".format(place_count, image["shutter_speed"]), image["image"])
