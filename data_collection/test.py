@@ -33,7 +33,7 @@ camera.awb_gains = (rg, bg)
 
 
 GPIO.output(led_pin, GPIO.HIGH)
-for i in range(100):
+for i in range(10):
     sleep(0.1)
     camera.capture(output, 'rgb')
     image_r = output[:,:,0]
@@ -43,7 +43,7 @@ for i in range(100):
     #image = np.rot90(image)
     cv2.imshow('red', image)
     #cv2.imshow('blue', image_b)
-    cv2.waitKey(500)
+    cv2.waitKey(1)
 
 GPIO.output(led_pin, GPIO.LOW)
 

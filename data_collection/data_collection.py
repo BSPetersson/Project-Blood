@@ -6,6 +6,7 @@ import matplotlib.pyplot as plt
 import RPi.GPIO as GPIO
 import os
 from copy import deepcopy
+import csv
 
 GPIO.setwarnings(False)
 
@@ -27,7 +28,7 @@ camera.resolution = (2048, 1520)
 camera.framerate = 5
 camera.iso = 100
 sleep(2)
-shutter_speed = 800000 #us
+shutter_speed = 10000 #us
 camera.shutter_speed = shutter_speed
 camera.exposure_mode = 'off'
 camera.awb_mode = 'off'
@@ -35,10 +36,17 @@ camera.awb_gains = (rg, bg)
 
 
 wavelength = input("Wavelength (nm):")
-human_id = input("Human ID:")
-#age = input("Age:")
-#Weight = input("Weight (kg):")
-#arm_circumference = input("Arm circumference (mm):")
+name = input("Name:")
+age = input("Age:")
+weight = input("Weight (kg):")
+arm_circumference = input("Arm circumference (mm):")
+skin_tone = input("Skine tone:")
+
+person_data = {"name": name, "age": age, "weight": weight, "arm circumference": arm_circumference, "skin tone": skin_tone}
+
+with open('../data/{}.csv'.format(name), 'w') as f:
+    for key in person_data.keys():
+        f.write("%s,%s\n"%(key, person_data[key]))
 
 
 def capture_data(lower_bound_sp, upper_bound_sp, count):
@@ -48,20 +56,20 @@ def capture_data(lower_bound_sp, upper_bound_sp, count):
     GPIO.output(led_pin, GPIO.HIGH)
     for sp in shutter_speeds:
         camera.shutter_speed = sp
-        sleep(1.0)
+        sleep(0.1)
         camera.capture(output, 'rgb')
         image = output[:,:,0]
         image = np.rot90(image)
         images.append({"shutter_speed": camera.shutter_speed, "iso": camera.iso, "image": deepcopy(image)})
         cv2.imshow('image90', image)
-        cv2.waitKey(500)
+        cv2.waitKey(160)
     GPIO.output(led_pin, GPIO.LOW)
     return images
 
 
 def save_images(images):
     global place_count
-    directory = "data/{}nm/id{}".format(wavelength, human_id)
+    directory = "../data/{}nm/{}".format(wavelength, name)
     os.makedirs(directory, exist_ok=True)
     for image in images:
         cv2.imwrite(directory + "/{}_{}.png".format(place_count, image["shutter_speed"]), image["image"])
@@ -73,7 +81,10 @@ while True:
     if state == "q":
         GPIO.output(led_pin, GPIO.LOW)
         break
-    if state == "w":
+    elif state == "w":
         wavelength = input("Wavelength (nm):")
-    images = capture_data(30000, 150000, 10)
-    save_images(images)
+    elif state == "l":
+        capture_data(10000, 150000, 5)
+    else:
+        images = capture_data(10000, 150000, 20)
+        save_images(images)
