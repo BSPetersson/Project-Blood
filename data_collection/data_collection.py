@@ -38,11 +38,10 @@ camera.awb_gains = (rg, bg)
 wavelength = input("Wavelength (nm):")
 name = input("Name:")
 age = input("Age:")
-weight = input("Weight (kg):")
 arm_circumference = input("Arm circumference (mm):")
 skin_tone = input("Skine tone:")
 
-person_data = {"name": name, "age": age, "weight": weight, "arm circumference": arm_circumference, "skin tone": skin_tone}
+person_data = {"name": name, "age": age, "arm circumference": arm_circumference, "skin tone": skin_tone}
 
 with open('data/{}.csv'.format(name), 'w') as f:
     for key in person_data.keys():
@@ -72,19 +71,23 @@ def save_images(images):
     directory = "data/{}nm/{}".format(wavelength, name)
     os.makedirs(directory, exist_ok=True)
     for image in images:
-        cv2.imwrite(directory + "/{}_{}.png".format(place_count, image["shutter_speed"]), image["image"])
+        cv2.imwrite(directory + "/{}_{}_{}_{}.png".format(place_count, image["shutter_speed"], wavelength, name), image["image"])
     place_count += 1
 
 
 while True:
     state = input("state:")
+    print(place_count)
     if state == "q":
         GPIO.output(led_pin, GPIO.LOW)
         break
     elif state == "w":
         wavelength = input("Wavelength (nm):")
+        place_count = 1
     elif state == "l":
-        capture_data(10000, 150000, 5)
+        capture_data(8000, 80000, 10)
+    elif state == "r":
+        place_count -= 1
     else:
-        images = capture_data(10000, 150000, 20)
+        images = capture_data(8000, 80000, 10)
         save_images(images)
