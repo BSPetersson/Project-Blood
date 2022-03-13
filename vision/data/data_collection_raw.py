@@ -1,4 +1,5 @@
-from picamera import PiCamera
+import picamerax
+import picamerax.array
 from time import sleep
 import numpy as np
 import cv2
@@ -7,22 +8,18 @@ import RPi.GPIO as GPIO
 import os
 from copy import deepcopy
 import csv
+from numpy import interp
 
 GPIO.setwarnings(False)
 
 led_pin = 13
 
-rg = 2.0
-bg = 2.0
-
 place_count = 1
-output = np.empty((1520, 2048, 3), dtype=np.uint8)
-
 
 GPIO.setmode(GPIO.BCM)
 GPIO.setup(led_pin, GPIO.OUT)
 
-camera = PiCamera()
+camera = picamerax.PiCamera()
 camera.resolution = (2048, 1520)
 camera.framerate = 5
 camera.iso = 100
@@ -31,8 +28,9 @@ shutter_speed = 10000 #us
 camera.shutter_speed = shutter_speed
 camera.exposure_mode = 'off'
 camera.awb_mode = 'off'
-camera.awb_gains = (rg, bg)
 
+stream = picamerax.array.PiBayerArray(camera)
+camera.capture(stream, "jpeg", bayer=True)
 
 wavelength = input("Wavelength (nm):")
 name = input("Name:")
@@ -55,12 +53,25 @@ def capture_data(lower_bound_sp, upper_bound_sp, count):
     for sp in shutter_speeds:
         camera.shutter_speed = sp
         sleep(0.1)
-        camera.capture(output, 'rgb')
-        image = output[:,:,0]
-        image = np.rot90(image)
-        images.append({"shutter_speed": camera.shutter_speed, "iso": camera.iso, "image": deepcopy(image)})
-        cv2.imshow('image90', image)
-        cv2.waitKey(160)
+        camera.capture(stream, "jpeg", bayer=True)
+        sleep(0.01)
+        output = np.sum(stream.array, axis=2).astype(np.uint16)
+        rgb = cv2.cvtColor(output, cv2.COLOR_BayerRG2RGB)
+
+        image_r = rgb[:,:,0]
+
+        image_r = np.rot90(image_r)
+
+        print(camera.shutter_speed)
+        images.append({"shutter_speed": camera.shutter_speed, "iso": camera.iso, "image": deepcopy(image_r)})
+
+        show_r = cv2.resize(image_r, dsize=(int(image_r.shape[1]/5), int(image_r.shape[0]/5)))
+
+        show_r = interp(show_r,[show_r.min(),show_r.max()],[0,255]).astype("uint8")
+
+        cv2.imshow('r', show_r)
+
+        cv2.waitKey(10)
     GPIO.output(led_pin, GPIO.LOW)
     return images
 
@@ -84,9 +95,9 @@ while True:
         wavelength = input("Wavelength (nm):")
         place_count = 1
     elif state == "l":
-        capture_data(8000, 80000, 10)
+        capture_data(10000, 200000, 10)
     elif state == "r":
         place_count -= 1
     else:
-        images = capture_data(5000, 50000, 10)
+        images = capture_data(10000, 200000, 10)
         save_images(images)

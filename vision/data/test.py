@@ -25,7 +25,7 @@ camera.resolution = (2048, 1520)
 camera.framerate = 5
 camera.iso = 100
 sleep(2)
-shutter_speed = 150000 #us
+shutter_speed = 80000 #us
 camera.shutter_speed = shutter_speed
 camera.exposure_mode = 'off'
 camera.awb_mode = 'off'
@@ -33,7 +33,7 @@ camera.awb_gains = (rg, bg)
 
 
 GPIO.output(led_pin, GPIO.HIGH)
-for i in range(10):
+for i in range(100):
     sleep(0.1)
     camera.capture(output, 'rgb')
     image_r = output[:,:,0]
